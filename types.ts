@@ -12,7 +12,8 @@ export enum BookingStatus {
   Confirmed = 'Confirmed',
   CheckedIn = 'Checked In',
   CheckedOut = 'Checked Out',
-  Cancelled = 'Cancelled'
+  Cancelled = 'Cancelled',
+  AwaitingVetting = 'Awaiting Vetting'
 }
 
 export enum PaymentMethod {
@@ -50,7 +51,7 @@ export enum OrganizationStatus {
   ContractPending = 'Contract Pending'
 }
 
-export type UserRole = 'SuperAdmin' | 'AgencyManager' | 'Viewer';
+export type UserRole = 'SuperAdmin' | 'AgencyManager' | 'Viewer' | 'Owner' | 'Tenant' | 'Lawyer' | 'Supplier';
 
 export interface User {
   id: string;
@@ -58,7 +59,9 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
-  agencyId?: string; // If null, they are platform admin
+  agencyId?: string;
+  status?: string;
+  linkedEntityId?: string; // ID of the Owner, Tenant, or Supplier record
 }
 
 export interface Agency {
@@ -71,6 +74,18 @@ export interface Agency {
   status: 'Active' | 'Pending' | 'Suspended';
   subscriptionPlan: 'Basic' | 'Pro' | 'Enterprise';
   balance: number;
+}
+
+export interface OwnerDetails {
+  name: string;
+  phone: string;
+  email: string;
+  contractStartDate: string;
+  contractEndDate: string;
+  managementFeePercentage: number;
+  notes?: string;
+  bankName?: string;
+  accountNumber?: string;
 }
 
 export interface Property {
@@ -87,13 +102,17 @@ export interface Property {
   monthlyRent?: number;
   currency: Currency;
   bedrooms?: number;
+  bathrooms?: number;
   amenities: string[];
   status: PropertyStatus;
   image: string;
+  images?: string[];
   rating?: number;
   units?: number;
   occupancyRate?: number;
   revenue?: number;
+  description?: string;
+  ownerDetails?: OwnerDetails;
 }
 
 export interface Tenant {
@@ -110,7 +129,7 @@ export interface Tenant {
   email: string;
   phone: string;
   balance: number;
-  organizationId?: string; // Link to Organization
+  organizationId?: string; 
 }
 
 export interface RentalUnit {
@@ -128,6 +147,12 @@ export interface Organization {
   name: string;
   contactPerson: string;
   rentals: RentalUnit[];
+  propertyId?: string; // Legacy support
+  propertyName?: string; // Legacy support
+  unitNumber?: string; // Legacy support
+  rentAmount?: number; // Legacy support
+  leaseStart?: string; // Legacy support
+  leaseEnd?: string; // Legacy support
   status: OrganizationStatus;
   email: string;
   phone: string;
@@ -161,6 +186,7 @@ export interface MaintenanceRequest {
   priority: Priority;
   status: 'Open' | 'In Progress' | 'Resolved';
   costEstimate: number;
+  assignedSupplierId?: string;
 }
 
 export interface Transaction {
@@ -182,7 +208,7 @@ export interface Suggestion {
   id: string;
   title: string;
   description: string;
-  type: 'Financial' | 'Maintenance' | 'Occupancy' | 'Tenant';
+  type: 'Financial' | 'Maintenance' | 'Occupancy' | 'Tenant' | 'Operational';
   impact: 'High' | 'Medium' | 'Low';
   actionLabel: string;
 }
@@ -228,4 +254,28 @@ export interface OfflineAction {
   type: 'ADD_TRANSACTION' | 'ADD_PROPERTY' | 'ADD_TENANT';
   payload: any;
   timestamp: number;
+}
+
+export interface Supplier {
+  id: string;
+  companyName: string;
+  contactPerson: string;
+  serviceType: string;
+  phone: string;
+  email: string;
+  status: 'Active' | 'Inactive';
+  hourlyRate: number;
+  jobsCompleted: number;
+  licenseNumber?: string;
+}
+
+export interface LegalCase {
+  id: string;
+  title: string;
+  type: string;
+  partiesInvolved: string[];
+  status: string;
+  priority: Priority;
+  dateCreated: string;
+  description: string;
 }

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Suggestion } from '../types';
 import { Lightbulb, TrendingUp, AlertTriangle, Users, ArrowRight, Check, X, Sparkles } from 'lucide-react';
@@ -98,7 +99,7 @@ export const Suggestions: React.FC<SuggestionsProps> = ({ suggestions, onDismiss
              Sida Talooyinku u shaqeeyaan
            </h3>
            <p className="text-slate-300 max-w-xl text-sm leading-relaxed">
-             LandPro AI waxay si joogto ah u falanqaysaa xogta suuqa Hargeysa, heerka buuxidda guryahaaga, iyo kharashaadka dayactirka si ay kuu siiso talooyin wax-ku-ool ah oo lagu kordhinayo faa'iidada.
+             GuriHub AI waxay si joogto ah u falanqaysaa xogta suuqa Hargeysa, heerka buuxidda guryahaaga, iyo kharashaadka dayactirka si ay kuu siiso talooyin wax-ku-ool ah oo lagu kordhinayo faa'iidada.
            </p>
         </div>
         <button className="whitespace-nowrap bg-white text-slate-900 px-6 py-3 rounded-lg font-bold text-sm hover:bg-brand-50 transition-colors shadow-lg">

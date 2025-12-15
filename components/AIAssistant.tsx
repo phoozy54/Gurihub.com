@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { getAIResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
@@ -7,11 +8,12 @@ interface AIAssistantProps {
   isOpen: boolean;
   onClose: () => void;
   contextData: string;
+  theme?: string;
 }
 
-export const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose, contextData }) => {
+export const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose, contextData, theme }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: 'Kusoo dhawaada LandPro! Waxaan ahay LandBot. Sideen kaa caawin karaa maamulka hantidaada maanta?', timestamp: new Date() }
+    { role: 'model', text: 'Kusoo dhawaada GuriHub! Waxaan ahay GuriBot. Sideen kaa caawin karaa maamulka hantidaada maanta?', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,8 +54,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose, conte
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="font-bold text-lg leading-none">LandBot AI</h2>
-            <p className="text-[10px] text-brand-200 opacity-90">LandPro Assistant</p>
+            <h2 className="font-bold text-lg leading-none">GuriBot AI</h2>
+            <p className="text-[10px] text-brand-200 opacity-90">GuriHub Assistant</p>
           </div>
         </div>
         <button onClick={onClose} className="hover:bg-brand-800 p-1.5 rounded-full text-white transition-colors">
@@ -106,7 +108,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose, conte
             <Send className="h-5 w-5" />
           </button>
         </div>
-        <p className="text-[10px] text-gray-400 mt-2 text-center">Wuxuu ku xiran yahay xogta LandPro (Live)</p>
+        <p className="text-[10px] text-gray-400 mt-2 text-center">Wuxuu ku xiran yahay xogta GuriHub (Live)</p>
       </div>
     </div>
   );

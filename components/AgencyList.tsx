@@ -1,13 +1,16 @@
 
 import React from 'react';
-import { Agency } from '../types';
-import { ShieldCheck, MoreVertical, Building2, Mail, Phone, ExternalLink } from 'lucide-react';
+import { Agency, User } from '../types';
+import { ShieldCheck, Building2, Mail, Phone, ExternalLink } from 'lucide-react';
 
 interface AgencyListProps {
   agencies: Agency[];
+  currentUser?: User;
 }
 
-export const AgencyList: React.FC<AgencyListProps> = ({ agencies }) => {
+export const AgencyList: React.FC<AgencyListProps> = ({ agencies, currentUser }) => {
+  const canCreate = currentUser?.role === 'SuperAdmin';
+
   return (
     <div className="space-y-6">
        <div className="flex justify-between items-center">
@@ -15,9 +18,11 @@ export const AgencyList: React.FC<AgencyListProps> = ({ agencies }) => {
              <h1 className="text-2xl font-bold text-gray-800">Agencies</h1>
              <p className="text-sm text-gray-500">Manage registered property companies</p>
           </div>
-          <button className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm">
-             + New Agency
-          </button>
+          {canCreate && (
+            <button className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm">
+               + New Agency
+            </button>
+          )}
        </div>
 
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -9,7 +9,7 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
-  const [email, setEmail] = useState('admin@rentalpro.so');
+  const [email, setEmail] = useState('admin@gurihub.com');
   const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
             <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-4">
               <Building2 className="h-8 w-8 text-brand-600" />
             </div>
-            <h1 className="text-2xl font-bold text-white">RentalPro</h1>
+            <h1 className="text-2xl font-bold text-white">GuriHub PMS</h1>
             <p className="text-brand-100 text-sm tracking-widest uppercase mt-1">Somaliland Edition</p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
                 </div>
              </div>
              <p className="text-center text-xs text-gray-400 mt-4">
-               &copy; 2024 RentalPro Somaliland. All rights reserved.
+               &copy; 2024 GuriHub PMS Somaliland. All rights reserved.
              </p>
           </div>
         </div>
@@ -133,7 +133,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
       {/* Demo Credentials Hint */}
       <div className="mt-4 text-xs text-gray-500 max-w-md text-center">
          <p><strong>Demo Accounts:</strong></p>
-         <p>Admin: admin@rentalpro.so | Manager: manager@hornafrica.so | Viewer: viewer@rentalpro.so</p>
+         <p>Admin: admin@gurihub.com | Manager: manager@agency.com</p>
+         <p>Supplier: supplier@gurihub.com</p>
          <p>Password: password</p>
       </div>
     </div>

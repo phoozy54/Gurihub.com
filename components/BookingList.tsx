@@ -1,15 +1,18 @@
 
 import React, { useState } from 'react';
-import { Booking, BookingStatus, PaymentMethod } from '../types';
-import { Search, Calendar, CreditCard, CheckCircle, XCircle, Clock, MapPin, Download, Users } from 'lucide-react';
+import { Booking, BookingStatus, PaymentMethod, User } from '../types';
+import { Calendar, CreditCard, CheckCircle, XCircle, Clock, Download, Users } from 'lucide-react';
 
 interface BookingListProps {
   bookings: Booking[];
+  currentUser?: User;
 }
 
-export const BookingList: React.FC<BookingListProps> = ({ bookings }) => {
+export const BookingList: React.FC<BookingListProps> = ({ bookings, currentUser }) => {
   const [filter, setFilter] = useState('All');
   
+  const canManage = currentUser?.role === 'SuperAdmin' || currentUser?.role === 'AgencyManager';
+
   const getStatusBadge = (status: BookingStatus) => {
     switch(status) {
       case BookingStatus.Confirmed: return <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1"><CheckCircle size={10} /> Confirmed</span>;
@@ -96,7 +99,9 @@ export const BookingList: React.FC<BookingListProps> = ({ bookings }) => {
                          </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                         <button className="text-brand-600 hover:text-brand-800 font-medium text-xs">Manage</button>
+                         {canManage && (
+                           <button className="text-brand-600 hover:text-brand-800 font-medium text-xs">Manage</button>
+                         )}
                       </td>
                    </tr>
                 ))}

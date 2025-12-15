@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tenant, TenantStatus, Property, Organization, User, Currency } from '../types';
-import { Search, Filter, Mail, Phone, Download, Plus, X, Building2 } from 'lucide-react';
+import { Search, Filter, Mail, Phone, Download, Plus, X, Building2, User as UserIcon, Save, ChevronRight, ChevronLeft, Home, FileText, Check } from 'lucide-react';
 
 interface TenantListProps {
   tenants: Tenant[];
@@ -14,7 +14,14 @@ interface TenantListProps {
 
 export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, properties, organizations = [], addActivity, currentUser }) => {
   const [search, setSearch] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  
+  // Wizard State
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
+
+  // State for adding new tenant
   const [newTenant, setNewTenant] = useState({
     name: '',
     propertyId: '',
@@ -22,7 +29,10 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
     rentAmount: '',
     phone: '',
     email: '',
-    organizationId: ''
+    organizationId: '',
+    leaseStart: new Date().toISOString().split('T')[0],
+    leaseEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+    status: TenantStatus.Active
   });
 
   const canEdit = currentUser.role === 'SuperAdmin' || currentUser.role === 'AgencyManager';
@@ -31,6 +41,38 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
     t.name.toLowerCase().includes(search.toLowerCase()) || 
     t.unitNumber.toLowerCase().includes(search.toLowerCase())
   );
+
+  const resetForm = () => {
+    setNewTenant({ 
+      name: '', propertyId: '', unitNumber: '', rentAmount: '', 
+      phone: '', email: '', organizationId: '',
+      leaseStart: new Date().toISOString().split('T')[0],
+      leaseEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      status: TenantStatus.Active
+    });
+    setCurrentStep(1);
+  };
+
+  const handleCloseModal = () => {
+    setIsAddModalOpen(false);
+    resetForm();
+  };
+
+  const handleNextStep = () => {
+    // Validation
+    if (currentStep === 1) {
+      if (!newTenant.name) return alert("Please enter the tenant's name.");
+    }
+    if (currentStep === 2) {
+      if (!newTenant.propertyId) return alert("Please select a property.");
+      if (!newTenant.rentAmount) return alert("Please enter the rent amount.");
+    }
+    setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
 
   const handleAddTenant = () => {
     if (!newTenant.name || !newTenant.propertyId) return;
@@ -42,12 +84,12 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
       name: newTenant.name,
       propertyId: newTenant.propertyId,
       propertyName: selectedProp?.name || 'Unknown Property',
-      unitNumber: newTenant.unitNumber,
+      unitNumber: newTenant.unitNumber || 'N/A',
       rentAmount: newTenant.rentAmount ? parseFloat(newTenant.rentAmount) : 0,
       currency: Currency.USD,
-      status: TenantStatus.Active,
-      leaseStart: new Date().toISOString().split('T')[0],
-      leaseEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      status: newTenant.status as TenantStatus,
+      leaseStart: newTenant.leaseStart,
+      leaseEnd: newTenant.leaseEnd,
       email: newTenant.email,
       phone: newTenant.phone,
       balance: 0,
@@ -56,8 +98,14 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
 
     setTenants([...tenants, tenant]);
     addActivity(`Kirayste cusub: ${tenant.name} (@${selectedProp?.name})`, 'success');
-    setIsModalOpen(false);
-    setNewTenant({ name: '', propertyId: '', unitNumber: '', rentAmount: '', phone: '', email: '', organizationId: '' });
+    handleCloseModal();
+  };
+
+  const handleUpdateTenant = () => {
+    if (!selectedTenant) return;
+    setTenants(prev => prev.map(t => t.id === selectedTenant.id ? selectedTenant : t));
+    addActivity(`Tenant updated: ${selectedTenant.name}`, 'info');
+    setSelectedTenant(null);
   };
 
   // Translation helper
@@ -74,6 +122,162 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
     }
   };
 
+  const renderWizardStep = () => {
+    switch (currentStep) {
+      case 1: // Personal Details
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tenant Name <span className="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                placeholder="Full Name (e.g. Ahmed Ali)"
+                value={newTenant.name}
+                onChange={e => setNewTenant({...newTenant, name: e.target.value})}
+                autoFocus
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input 
+                  type="text" 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  placeholder="+252..."
+                  value={newTenant.phone}
+                  onChange={e => setNewTenant({...newTenant, phone: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input 
+                  type="email" 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  placeholder="email@example.com"
+                  value={newTenant.email}
+                  onChange={e => setNewTenant({...newTenant, email: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">Organization (Optional)</label>
+               <select
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  value={newTenant.organizationId}
+                  onChange={e => setNewTenant({...newTenant, organizationId: e.target.value})}
+               >
+                  <option value="">Individual Tenant (No Org)</option>
+                  {organizations.map(org => (
+                     <option key={org.id} value={org.id}>{org.name}</option>
+                  ))}
+               </select>
+               <p className="text-xs text-gray-500 mt-1">Link if this tenant is sponsored by a registered company.</p>
+            </div>
+          </div>
+        );
+      case 2: // Property Details
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">Select Property <span className="text-red-500">*</span></label>
+               <select 
+                 className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                 value={newTenant.propertyId}
+                 onChange={e => setNewTenant({...newTenant, propertyId: e.target.value})}
+               >
+                 <option value="">-- Choose Property --</option>
+                 {properties.map(p => (
+                   <option key={p.id} value={p.id}>{p.name} ({p.status})</option>
+                 ))}
+               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
+                 <input 
+                   type="text" 
+                   className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                   placeholder="e.g. A-101"
+                   value={newTenant.unitNumber}
+                   onChange={e => setNewTenant({...newTenant, unitNumber: e.target.value})}
+                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Rent ($) <span className="text-red-500">*</span></label>
+                <input 
+                  type="number" 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  placeholder="0.00"
+                  value={newTenant.rentAmount}
+                  onChange={e => setNewTenant({...newTenant, rentAmount: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      case 3: // Lease Terms & Review
+        const selectedProp = properties.find(p => p.id === newTenant.propertyId);
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+             <div className="grid grid-cols-2 gap-4">
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Lease Start Date</label>
+                  <input 
+                    type="date" 
+                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={newTenant.leaseStart}
+                    onChange={e => setNewTenant({...newTenant, leaseStart: e.target.value})}
+                  />
+               </div>
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Lease End Date</label>
+                  <input 
+                    type="date" 
+                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    value={newTenant.leaseEnd}
+                    onChange={e => setNewTenant({...newTenant, leaseEnd: e.target.value})}
+                  />
+               </div>
+             </div>
+
+             <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-4">
+               <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                 <FileText size={16} /> Summary Review
+               </h4>
+               <div className="space-y-2 text-sm text-gray-600">
+                 <div className="flex justify-between">
+                   <span>Tenant:</span>
+                   <span className="font-medium text-gray-900">{newTenant.name}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span>Property:</span>
+                   <span className="font-medium text-gray-900">{selectedProp?.name}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span>Unit:</span>
+                   <span className="font-medium text-gray-900">{newTenant.unitNumber || 'N/A'}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span>Monthly Rent:</span>
+                   <span className="font-bold text-green-600">${parseFloat(newTenant.rentAmount).toLocaleString()}</span>
+                 </div>
+                 <div className="flex justify-between pt-2 border-t border-gray-200">
+                   <span>Contact:</span>
+                   <span className="text-gray-900">{newTenant.phone || newTenant.email || 'N/A'}</span>
+                 </div>
+               </div>
+             </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -81,7 +285,7 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
         <div className="flex gap-3 w-full sm:w-auto">
           {canEdit && (
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsAddModalOpen(true)}
               className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium"
             >
               <Plus size={16} /> Add Tenant
@@ -163,7 +367,12 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
                   </td>
                   <td className="px-6 py-4 text-right">
                     {canEdit && (
-                      <button className="text-brand-600 hover:text-brand-800 font-medium text-xs border border-brand-200 px-2 py-1 rounded hover:bg-brand-50">Manage</button>
+                      <button 
+                        onClick={() => setSelectedTenant(tenant)}
+                        className="text-brand-600 hover:text-brand-800 font-medium text-xs border border-brand-200 px-2 py-1 rounded hover:bg-brand-50"
+                      >
+                        Manage
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -178,99 +387,188 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
         )}
       </div>
 
-      {/* Add Tenant Modal */}
-      {isModalOpen && canEdit && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-               <h2 className="text-lg font-bold text-gray-800">Add Tenant</h2>
-               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+      {/* Add Tenant Wizard Modal */}
+      {isAddModalOpen && canEdit && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+            
+            {/* Modal Header & Stepper */}
+            <div className="p-6 border-b border-gray-100">
+               <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">Tenant Onboarding</h2>
+                    <p className="text-sm text-gray-500">Add a new tenant to the system</p>
+                  </div>
+                  <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 p-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"><X size={20} /></button>
+               </div>
+
+               {/* Stepper */}
+               <div className="flex items-center justify-between relative">
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 -z-10 rounded-full"></div>
+                  <div className={`absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-brand-200 -z-10 rounded-full transition-all duration-300`} style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}></div>
+                  
+                  {[1, 2, 3].map((step) => (
+                     <div key={step} className={`flex flex-col items-center gap-2`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
+                           currentStep >= step 
+                           ? 'bg-brand-600 border-brand-600 text-white' 
+                           : 'bg-white border-gray-300 text-gray-400'
+                        }`}>
+                           {currentStep > step ? <Check size={14} /> : (step === 1 ? <UserIcon size={14} /> : step === 2 ? <Home size={14} /> : <FileText size={14} />)}
+                        </div>
+                        <span className={`text-[10px] font-semibold uppercase tracking-wide ${currentStep >= step ? 'text-brand-600' : 'text-gray-400'}`}>
+                           {step === 1 ? 'Details' : step === 2 ? 'Property' : 'Lease'}
+                        </span>
+                     </div>
+                  ))}
+               </div>
             </div>
+
+            {/* Modal Content - Dynamic Steps */}
+            <div className="p-6 flex-1 overflow-y-auto">
+               {renderWizardStep()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-100 flex justify-between">
+               {currentStep > 1 ? (
+                  <button 
+                    onClick={handlePrevStep}
+                    className="px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl text-sm font-medium flex items-center gap-2 transition-colors"
+                  >
+                    <ChevronLeft size={16} /> Back
+                  </button>
+               ) : (
+                  <button onClick={handleCloseModal} className="px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl text-sm font-medium">Cancel</button>
+               )}
+
+               {currentStep < totalSteps ? (
+                  <button 
+                    onClick={handleNextStep}
+                    className="px-6 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-transform active:scale-95"
+                  >
+                    Next Step <ChevronRight size={16} />
+                  </button>
+               ) : (
+                  <button 
+                    onClick={handleAddTenant}
+                    className="px-6 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 shadow-lg shadow-green-500/20 flex items-center gap-2 transition-transform active:scale-95"
+                  >
+                    <Save size={16} /> Confirm & Save
+                  </button>
+               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Manage Tenant Modal - Keeping original simpler format for edits for now */}
+      {selectedTenant && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                 <div className="h-10 w-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-600 font-bold">
+                    {selectedTenant.name.charAt(0)}
+                 </div>
+                 <div>
+                    <h2 className="text-lg font-bold text-gray-800">Edit Tenant Details</h2>
+                    <p className="text-xs text-gray-500">ID: {selectedTenant.id}</p>
+                 </div>
+              </div>
+              <button onClick={() => setSelectedTenant(null)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+            </div>
+            
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tenant Name</label>
-                <input 
-                  type="text" 
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                  placeholder="Full Name"
-                  value={newTenant.name}
-                  onChange={e => setNewTenant({...newTenant, name: e.target.value})}
-                />
-              </div>
-              
-              {/* Organization Link */}
-              <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">Sponsoring Organization (Optional)</label>
-                 <select
-                    className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                    value={newTenant.organizationId}
-                    onChange={e => setNewTenant({...newTenant, organizationId: e.target.value})}
-                 >
-                    <option value="">None (Individual Tenant)</option>
-                    {organizations.map(org => (
-                       <option key={org.id} value={org.id}>{org.name}</option>
-                    ))}
-                 </select>
-                 <p className="text-xs text-gray-500 mt-1">Select if this tenant is an employee of a registered rental organization.</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Property</label>
-                   <select 
-                     className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                     value={newTenant.propertyId}
-                     onChange={e => setNewTenant({...newTenant, propertyId: e.target.value})}
-                   >
-                     <option value="">Select Property</option>
-                     {properties.map(p => (
-                       <option key={p.id} value={p.id}>{p.name}</option>
-                     ))}
-                   </select>
-                </div>
-                <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
-                   <input 
-                     type="text" 
-                     className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                     placeholder="e.g. A-101"
-                     value={newTenant.unitNumber}
-                     onChange={e => setNewTenant({...newTenant, unitNumber: e.target.value})}
-                   />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rent (USD)</label>
-                  <input 
-                    type="number" 
-                    className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                    placeholder="0.00"
-                    value={newTenant.rentAmount}
-                    onChange={e => setNewTenant({...newTenant, rentAmount: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tenant Name</label>
                   <input 
                     type="text" 
                     className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                    placeholder="+252..."
-                    value={newTenant.phone}
-                    onChange={e => setNewTenant({...newTenant, phone: e.target.value})}
+                    value={selectedTenant.name}
+                    onChange={e => setSelectedTenant({...selectedTenant, name: e.target.value})}
                   />
-                </div>
-              </div>
+               </div>
+
+               {/* Organization Link - Edit Mode */}
+               <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                   <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                      <Building2 size={14} className="text-brand-600" /> Linked Organization
+                   </label>
+                   <select
+                      className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none bg-white"
+                      value={selectedTenant.organizationId || ''}
+                      onChange={e => setSelectedTenant({...selectedTenant, organizationId: e.target.value || undefined})}
+                   >
+                      <option value="">No Organization (Individual)</option>
+                      {organizations.map(org => (
+                         <option key={org.id} value={org.id}>{org.name}</option>
+                      ))}
+                   </select>
+                   <p className="text-xs text-gray-500 mt-2">
+                      Linking a tenant to an organization groups their payments and reporting under the company account.
+                   </p>
+               </div>
+
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                     <input 
+                       type="text" 
+                       className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                       value={selectedTenant.phone}
+                       onChange={e => setSelectedTenant({...selectedTenant, phone: e.target.value})}
+                     />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                     <input 
+                       type="email" 
+                       className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                       value={selectedTenant.email}
+                       onChange={e => setSelectedTenant({...selectedTenant, email: e.target.value})}
+                     />
+                  </div>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                     <select
+                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                        value={selectedTenant.status}
+                        onChange={e => setSelectedTenant({...selectedTenant, status: e.target.value as TenantStatus})}
+                     >
+                        <option value={TenantStatus.Active}>Active</option>
+                        <option value={TenantStatus.Late}>Late</option>
+                        <option value={TenantStatus.Eviction}>Eviction</option>
+                        <option value={TenantStatus.Past}>Past</option>
+                     </select>
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Balance Due ($)</label>
+                     <input 
+                       type="number" 
+                       className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                       value={selectedTenant.balance}
+                       onChange={e => setSelectedTenant({...selectedTenant, balance: parseFloat(e.target.value)})}
+                     />
+                  </div>
+               </div>
+
+               <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+                  <span>Unit: {selectedTenant.unitNumber}</span>
+                  <span>Property: {selectedTenant.propertyName}</span>
+               </div>
             </div>
+
             <div className="flex justify-end gap-2 mt-6">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Cancel</button>
+              <button onClick={() => setSelectedTenant(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Cancel</button>
               <button 
-                onClick={handleAddTenant}
-                disabled={!newTenant.name || !newTenant.propertyId}
-                className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm disabled:opacity-50"
+                onClick={handleUpdateTenant}
+                className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm flex items-center gap-2"
               >
-                Save
+                <Save size={16} /> Save Changes
               </button>
             </div>
           </div>

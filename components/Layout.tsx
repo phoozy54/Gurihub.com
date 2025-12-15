@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutGrid, Building2, CalendarDays, Users, CreditCard, Settings, Search, Menu, Sparkles, LogOut, Map, Briefcase, Smartphone, UserCheck, Shield, Wrench } from 'lucide-react';
+import { LayoutGrid, Building2, CalendarDays, Users, CreditCard, Settings, Search, Menu, Sparkles, LogOut, Map, Briefcase, Smartphone, UserCheck, Shield, Wrench, Sun, Moon, Scale } from 'lucide-react';
 import { User, UserRole } from '../types';
 
 interface LayoutProps {
@@ -11,20 +11,23 @@ interface LayoutProps {
   currentUser: User;
   onSwitchUser?: () => void;
   onLogout: () => void;
+  darkMode?: boolean;
+  toggleDarkMode?: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, onOpenAI, currentUser, onSwitchUser, onLogout }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, onOpenAI, currentUser, onSwitchUser, onLogout, darkMode, toggleDarkMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   // Define role-based access
   const allNavItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, roles: ['SuperAdmin', 'AgencyManager', 'Viewer'] },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, roles: ['SuperAdmin', 'AgencyManager', 'Viewer', 'Supplier'] },
     { id: 'agencies', label: 'Agencies', icon: Briefcase, roles: ['SuperAdmin'] },
     { id: 'bookings', label: 'Bookings', icon: CalendarDays, roles: ['SuperAdmin', 'AgencyManager', 'Viewer'] },
     { id: 'properties', label: 'Properties', icon: Building2, roles: ['SuperAdmin', 'AgencyManager', 'Viewer'] },
     // Rentals (Org) merged into Tenants
     { id: 'tenants', label: 'Kiraystayaasha', icon: UserCheck, roles: ['SuperAdmin', 'AgencyManager'] },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench, roles: ['SuperAdmin', 'AgencyManager'] },
+    { id: 'legal', label: 'Legal Dept', icon: Scale, roles: ['SuperAdmin', 'AgencyManager'] },
     { id: 'customers', label: 'Customers', icon: Users, roles: ['SuperAdmin'] },
     { id: 'users', label: 'System Users', icon: Shield, roles: ['SuperAdmin'] },
     { id: 'locations', label: 'Locations', icon: Map, roles: ['SuperAdmin'] },
@@ -40,6 +43,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       case 'SuperAdmin': return 'Super Admin';
       case 'AgencyManager': return 'Agency Manager';
       case 'Viewer': return 'Viewer (Read-only)';
+      case 'Supplier': return 'Supplier / Trade';
       default: return role;
     }
   };
@@ -49,15 +53,16 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       case 'SuperAdmin': return 'bg-brand-700';
       case 'AgencyManager': return 'bg-blue-600';
       case 'Viewer': return 'bg-gray-500';
+      case 'Supplier': return 'bg-orange-600';
       default: return 'bg-gray-700';
     }
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden" dir="ltr">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden transition-colors duration-200" dir="ltr">
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 dark:bg-slate-950 text-white transform transition-transform duration-300 ease-in-out border-r border-slate-800 dark:border-slate-800
         lg:translate-x-0 lg:static lg:inset-auto
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
@@ -67,7 +72,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
              <Building2 className="relative h-5 w-5 text-white z-10" />
           </div>
           <div>
-            <span className="font-bold text-xl text-white tracking-tight block">RentalPro</span>
+            <span className="font-bold text-xl text-white tracking-tight block">GuriHub PMS</span>
             <span className="text-[10px] uppercase tracking-widest text-brand-400">Somaliland</span>
           </div>
         </div>
@@ -92,7 +97,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           ))}
         </nav>
 
-        <div className="absolute bottom-0 w-full p-4 border-t border-slate-800 space-y-4 bg-slate-900">
+        <div className="absolute bottom-0 w-full p-4 border-t border-slate-800 space-y-4 bg-slate-900 dark:bg-slate-950">
            <button 
              onClick={onLogout}
              className="flex items-center gap-3 px-4 text-sm font-medium text-red-400 hover:text-red-300 transition-colors w-full"
@@ -101,7 +106,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               Logout
            </button>
 
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div className="bg-slate-800 dark:bg-slate-900 rounded-xl p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-medium text-slate-400">System Status</p>
               <div className="flex items-center gap-1.5">
@@ -115,31 +120,42 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm">
+        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm transition-colors duration-200">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg text-gray-600"
+              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300"
             >
               <Menu size={20} />
             </button>
-            <div className="hidden md:flex items-center bg-slate-100 rounded-lg px-3 py-2 w-72 border border-transparent focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 transition-all">
-              <Search size={16} className="text-gray-400 mr-2" />
+            <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2 w-72 border border-transparent focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 dark:focus-within:ring-slate-600 transition-all">
+              <Search size={16} className="text-gray-400 dark:text-gray-300 mr-2" />
               <input 
                 type="text" 
                 placeholder="Search properties, tenants..." 
-                className="bg-transparent border-none focus:outline-none text-sm w-full text-gray-700"
+                className="bg-transparent border-none focus:outline-none text-sm w-full text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-4">
+             {/* Dark Mode Toggle */}
+             {toggleDarkMode && (
+                <button 
+                  onClick={toggleDarkMode} 
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  title="Toggle Dark Mode"
+                >
+                   {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+             )}
+
             {/* Role Switcher for Demo */}
             <button 
               onClick={onSwitchUser}
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-600 transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 transition-colors"
               title="Click to switch user role (Demo)"
             >
               <Shield size={12} />
@@ -148,17 +164,17 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
 
             <button 
               onClick={onOpenAI}
-              className="flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 transition-colors text-sm font-semibold border border-brand-200 shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-50 dark:bg-slate-700 text-brand-700 dark:text-brand-300 rounded-lg hover:bg-brand-100 dark:hover:bg-slate-600 transition-colors text-sm font-semibold border border-brand-200 dark:border-slate-600 shadow-sm"
             >
-              <Sparkles size={16} className="text-brand-600" />
+              <Sparkles size={16} className="text-brand-600 dark:text-brand-400" />
               AI Assistant
             </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+            <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-slate-700">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-gray-800">{currentUser.name}</p>
-                <p className="text-xs text-gray-500">{getRoleLabel(currentUser.role)}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-white">{currentUser.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{getRoleLabel(currentUser.role)}</p>
               </div>
-              <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white font-medium shadow-sm ring-2 ring-white ${getRoleBadgeColor(currentUser.role)}`}>
+              <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white font-medium shadow-sm ring-2 ring-white dark:ring-slate-700 ${getRoleBadgeColor(currentUser.role)}`}>
                 {currentUser.name.charAt(0)}
               </div>
             </div>
@@ -166,7 +182,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-slate-600">
           {children}
         </main>
       </div>

@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 
 // Initialize Gemini Client
@@ -10,7 +11,7 @@ export const getAIResponse = async (
   try {
     const modelId = 'gemini-2.5-flash';
     
-    const systemInstruction = `Adigu waxaad tahay "LandBot", oo ah caawiye caqli badan (AI) oo loogu talagalay Nidaamka Maamulka Guryaha ee LandPro PMS.
+    const systemInstruction = `Adigu waxaad tahay "GuriBot", oo ah caawiye caqli badan (AI) oo loogu talagalay Nidaamka Maamulka Guryaha ee GuriHub PMS.
     
     Hawshaada:
     1. Waa inaad ku jawaabtaa AF-SOMALI oo kaliya, haddii aan lagu waydiisan luuqad kale.
