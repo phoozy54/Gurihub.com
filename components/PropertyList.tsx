@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Property, PropertyStatus, User, Currency, Tenant, Organization } from '../types';
 import { MapPin, Home, MoreHorizontal, ArrowUpRight, Layout, Plus, X, Image as ImageIcon, List, Map as MapIcon } from 'lucide-react';
 import { PropertyMap } from './PropertyMap';
+import { hasPermission, PERMISSIONS } from '../utils/permissions';
 
 interface PropertyListProps {
   properties: Property[];
@@ -28,7 +29,8 @@ export const PropertyList: React.FC<PropertyListProps> = ({ properties, setPrope
     image: 'https://picsum.photos/800/600' // Placeholder
   });
 
-  const canEdit = currentUser.role === 'SuperAdmin' || currentUser.role === 'AgencyManager';
+  // Use granular permission check instead of role check
+  const canEdit = hasPermission(currentUser, PERMISSIONS.MANAGE_PROPERTIES);
 
   const handleAddProperty = () => {
     if (!newProperty.name || !newProperty.address) return;
@@ -139,7 +141,7 @@ export const PropertyList: React.FC<PropertyListProps> = ({ properties, setPrope
 
               <div className="grid grid-cols-2 gap-4 mt-4 py-4 border-t border-gray-100 dark:border-slate-700">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Qaybaha (Units)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Qaybta (Units)</p>
                   <div className="flex items-center text-gray-800 dark:text-gray-200 font-medium">
                     <Home size={16} className="mr-1.5 text-gray-400" />
                     {prop.units} Unit

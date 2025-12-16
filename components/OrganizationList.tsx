@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Organization, OrganizationStatus, Property, Transaction, Tenant, RentalUnit, User } from '../types';
-import { Search, Filter, Mail, Phone, Download, Plus, X, Building2, User as UserIcon, ArrowLeft, FileText, CheckCircle, Clock, Users, Trash2, Calendar } from 'lucide-react';
+import { Search, Filter, Mail, Phone, Download, Plus, X, Building2, User as UserIcon, ArrowLeft, FileText, CheckCircle, Clock, Users, Trash2, Calendar, Edit2, Save } from 'lucide-react';
 
 interface OrganizationListProps {
   organizations: Organization[];
@@ -17,6 +17,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
   const [search, setSearch] = useState('');
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   // Form State
   const [newOrgName, setNewOrgName] = useState('');
@@ -41,6 +42,40 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
     o.name.toLowerCase().includes(search.toLowerCase()) || 
     o.contactPerson.toLowerCase().includes(search.toLowerCase())
   );
+
+  const resetForm = () => {
+    setNewOrgName('');
+    setNewOrgContact('');
+    setNewOrgEmail('');
+    setNewOrgPhone('');
+    setNewOrgTaxId('');
+    setPendingRentals([]);
+    setIsEditMode(false);
+    setCurrentRental({
+        propertyId: '',
+        unitNumber: '',
+        rentAmount: 0,
+        leaseStart: new Date().toISOString().split('T')[0],
+        leaseEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+    });
+  };
+
+  const handleOpenAdd = () => {
+      resetForm();
+      setIsEditMode(false);
+      setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (org: Organization) => {
+      setNewOrgName(org.name);
+      setNewOrgContact(org.contactPerson);
+      setNewOrgEmail(org.email);
+      setNewOrgPhone(org.phone);
+      setNewOrgTaxId(org.taxId || '');
+      setPendingRentals([...org.rentals]); // Clone array
+      setIsEditMode(true);
+      setIsModalOpen(true);
+  };
 
   const handleAddUnit = () => {
     if (!currentRental.propertyId || !currentRental.rentAmount) return;
@@ -71,37 +106,50 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
   const handleSaveOrganization = () => {
     if (!newOrgName || pendingRentals.length === 0) return;
 
-    const org: Organization = {
-      id: `ORG${Date.now()}`,
-      name: newOrgName,
-      contactPerson: newOrgContact,
-      email: newOrgEmail,
-      phone: newOrgPhone,
-      taxId: newOrgTaxId,
-      status: OrganizationStatus.Active,
-      balance: 0,
-      rentals: pendingRentals.map((r, idx) => ({
-        id: `R-${Date.now()}-${idx}`,
+    const rentalsPayload: RentalUnit[] = pendingRentals.map((r, idx) => ({
+        id: r.id && !r.id.startsWith('TMP') ? r.id : `R-${Date.now()}-${idx}`,
         propertyId: r.propertyId!,
         propertyName: r.propertyName!,
         unitNumber: r.unitNumber || 'N/A',
         rentAmount: r.rentAmount || 0,
         leaseStart: r.leaseStart!,
         leaseEnd: r.leaseEnd!
-      }))
-    };
+    }));
 
-    setOrganizations([...organizations, org]);
-    addActivity(`Rental cusub lagu daray: ${org.name} (${org.rentals.length} units)`, 'success');
+    if (isEditMode && selectedOrg) {
+        // Update Existing
+        const updatedOrg: Organization = {
+            ...selectedOrg,
+            name: newOrgName,
+            contactPerson: newOrgContact,
+            email: newOrgEmail,
+            phone: newOrgPhone,
+            taxId: newOrgTaxId,
+            rentals: rentalsPayload
+        };
+        
+        setOrganizations(prev => prev.map(o => o.id === selectedOrg.id ? updatedOrg : o));
+        setSelectedOrg(updatedOrg); // Update the view
+        addActivity(`Organization updated: ${updatedOrg.name}`, 'info');
+    } else {
+        // Create New
+        const org: Organization = {
+            id: `ORG${Date.now()}`,
+            name: newOrgName,
+            contactPerson: newOrgContact,
+            email: newOrgEmail,
+            phone: newOrgPhone,
+            taxId: newOrgTaxId,
+            status: OrganizationStatus.Active,
+            balance: 0,
+            rentals: rentalsPayload
+        };
+        setOrganizations([...organizations, org]);
+        addActivity(`New Organization Registered: ${org.name}`, 'success');
+    }
     
-    // Reset Form
     setIsModalOpen(false);
-    setNewOrgName('');
-    setNewOrgContact('');
-    setNewOrgEmail('');
-    setNewOrgPhone('');
-    setNewOrgTaxId('');
-    setPendingRentals([]);
+    resetForm();
   };
 
   const getStatusBadge = (status: OrganizationStatus) => {
@@ -126,19 +174,26 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
         {/* Header with Back button */}
-        <div className="flex items-center gap-4">
-          <button onClick={() => setSelectedOrg(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors group" title="Back to List">
-            <ArrowLeft size={20} className="text-gray-600 group-hover:text-brand-600" />
-          </button>
-          <div>
-             <h1 className="text-2xl font-bold text-gray-800">{selectedOrg.name}</h1>
-             <p className="text-sm text-gray-500 flex items-center gap-2">
-               Rental Profile <span className="w-1 h-1 rounded-full bg-gray-400"></span> ID: {selectedOrg.id}
-             </p>
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setSelectedOrg(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors group" title="Back to List">
+                <ArrowLeft size={20} className="text-gray-600 group-hover:text-brand-600" />
+            </button>
+            <div>
+                <h1 className="text-2xl font-bold text-gray-800">{selectedOrg.name}</h1>
+                <p className="text-sm text-gray-500 flex items-center gap-2">
+                Rental Profile <span className="w-1 h-1 rounded-full bg-gray-400"></span> ID: {selectedOrg.id}
+                </p>
+            </div>
           </div>
-          <div className="ml-auto flex gap-2">
+          <div className="md:ml-auto flex gap-2">
              {canEdit && (
-               <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700">Edit Details</button>
+               <button 
+                 onClick={() => handleOpenEdit(selectedOrg)}
+                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700 flex items-center gap-2"
+               >
+                 <Edit2 size={16} /> Edit Details
+               </button>
              )}
              <button className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm flex items-center gap-2">
                <Mail size={16} /> Send Message
@@ -152,7 +207,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
               <div className="flex justify-between items-start mb-6">
                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                    <div className="p-2 bg-brand-50 rounded-lg text-brand-600"><Building2 size={20} /></div>
-                   Rental Overview
+                   Organization Overview
                 </h3>
                 {getStatusBadge(selectedOrg.status)}
               </div>
@@ -205,7 +260,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                  <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><FileText size={20} /></div>
-                 Lease Portfolio Summary
+                 Lease Portfolio
               </h3>
               
               <div className="flex-1 space-y-4">
@@ -219,12 +274,12 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
                  </div>
                  
                  <div className="mt-4">
-                   <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">Leased Properties</p>
-                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                   <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">Active Leases</p>
+                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                      {selectedOrg.rentals.map((r) => (
                        <div key={r.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
                           <div className="flex justify-between font-medium text-gray-800">
-                             <span>{r.propertyName}</span>
+                             <span className="truncate max-w-[150px]">{r.propertyName}</span>
                              <span>${r.rentAmount.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -238,7 +293,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
               </div>
               
               <button className="w-full mt-6 py-2.5 text-sm font-medium text-brand-700 bg-brand-50 border border-brand-100 rounded-lg hover:bg-brand-100 transition-colors flex items-center justify-center gap-2">
-                 <Download size={16} /> Download Contracts
+                 <Download size={16} /> Download All Contracts
               </button>
            </div>
         </div>
@@ -356,7 +411,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
         <div className="flex gap-3 w-full sm:w-auto">
           {canEdit && (
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleOpenAdd}
               className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium"
             >
               <Plus size={16} /> Add Rental
@@ -461,12 +516,14 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
         )}
       </div>
 
-      {/* Add Rental Modal */}
+      {/* Add/Edit Rental Modal */}
       {isModalOpen && canEdit && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-4">
-               <h2 className="text-lg font-bold text-gray-800">Add New Rental Organization</h2>
+               <h2 className="text-lg font-bold text-gray-800">
+                   {isEditMode ? 'Edit Organization' : 'Add New Rental Organization'}
+               </h2>
                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
@@ -529,7 +586,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
 
               {/* Rental Units Logic */}
               <div>
-                <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Rental Units</h3>
+                <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Rental Units ({pendingRentals.length})</h3>
                 
                 {/* List of pending rentals */}
                 {pendingRentals.length > 0 && (
@@ -541,7 +598,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
                             <span className="text-xs text-gray-500">Unit: {rental.unitNumber} • ${rental.rentAmount?.toLocaleString()}</span>
                             <span className="text-xs text-gray-400 block">{rental.leaseStart} to {rental.leaseEnd}</span>
                           </div>
-                          <button onClick={() => handleRemoveUnit(idx)} className="text-red-500 hover:bg-red-100 p-1 rounded">
+                          <button onClick={() => handleRemoveUnit(idx)} className="text-red-500 hover:bg-red-100 p-1 rounded transition-colors" title="Remove Unit">
                              <Trash2 size={16} />
                           </button>
                        </div>
@@ -605,9 +662,9 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
                       <button 
                         onClick={handleAddUnit}
                         disabled={!currentRental.propertyId || !currentRental.rentAmount}
-                        className="w-full bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                         + Add Unit to List
+                         <Plus size={16} /> Add Unit
                       </button>
                    </div>
                 </div>
@@ -619,9 +676,9 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({ organization
               <button 
                 onClick={handleSaveOrganization}
                 disabled={!newOrgName || pendingRentals.length === 0}
-                className="px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm disabled:opacity-50"
+                className="px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm disabled:opacity-50 flex items-center gap-2"
               >
-                Save Organization
+                <Save size={16} /> {isEditMode ? 'Update Organization' : 'Save Organization'}
               </button>
             </div>
           </div>

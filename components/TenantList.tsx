@@ -14,6 +14,8 @@ interface TenantListProps {
 
 export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, properties, organizations = [], addActivity, currentUser }) => {
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [orgFilter, setOrgFilter] = useState<string>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   
@@ -37,10 +39,20 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
 
   const canEdit = currentUser.role === 'SuperAdmin' || currentUser.role === 'AgencyManager';
 
-  const filtered = tenants.filter(t => 
-    t.name.toLowerCase().includes(search.toLowerCase()) || 
-    t.unitNumber.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = tenants.filter(t => {
+    const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) || 
+                          t.unitNumber.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
+    
+    const matchesOrg = orgFilter === 'All' 
+      ? true 
+      : orgFilter === 'Individual' 
+        ? !t.organizationId 
+        : t.organizationId === orgFilter;
+
+    return matchesSearch && matchesStatus && matchesOrg;
+  });
 
   const resetForm = () => {
     setNewTenant({ 
@@ -282,7 +294,7 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Tenants</h1>
-        <div className="flex gap-3 w-full sm:w-auto">
+        <div className="flex gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
           {canEdit && (
             <button 
               onClick={() => setIsAddModalOpen(true)}
@@ -291,7 +303,7 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
               <Plus size={16} /> Add Tenant
             </button>
           )}
-          <div className="relative flex-1 sm:w-64">
+          <div className="relative flex-1 sm:w-64 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
@@ -301,9 +313,31 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, setTenants, pro
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
             />
           </div>
-          <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600" title="Filter">
-            <Filter className="h-5 w-5" />
-          </button>
+          
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 bg-white cursor-pointer hover:bg-gray-50"
+          >
+            <option value="All">All Status</option>
+            <option value={TenantStatus.Active}>Active</option>
+            <option value={TenantStatus.Late}>Late</option>
+            <option value={TenantStatus.Eviction}>Eviction</option>
+            <option value={TenantStatus.Past}>Past</option>
+          </select>
+
+          <select
+            value={orgFilter}
+            onChange={(e) => setOrgFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 bg-white cursor-pointer hover:bg-gray-50 max-w-[160px]"
+          >
+            <option value="All">All Types</option>
+            <option value="Individual">Individual</option>
+            {organizations.map(org => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
+
           <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600" title="Export">
             <Download className="h-5 w-5" />
           </button>

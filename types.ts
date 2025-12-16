@@ -147,12 +147,6 @@ export interface Organization {
   name: string;
   contactPerson: string;
   rentals: RentalUnit[];
-  propertyId?: string; // Legacy support
-  propertyName?: string; // Legacy support
-  unitNumber?: string; // Legacy support
-  rentAmount?: number; // Legacy support
-  leaseStart?: string; // Legacy support
-  leaseEnd?: string; // Legacy support
   status: OrganizationStatus;
   email: string;
   phone: string;

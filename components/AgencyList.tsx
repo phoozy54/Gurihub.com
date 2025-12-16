@@ -2,6 +2,7 @@
 import React from 'react';
 import { Agency, User } from '../types';
 import { ShieldCheck, Building2, Mail, Phone, ExternalLink } from 'lucide-react';
+import { hasPermission, PERMISSIONS } from '../utils/permissions';
 
 interface AgencyListProps {
   agencies: Agency[];
@@ -9,7 +10,8 @@ interface AgencyListProps {
 }
 
 export const AgencyList: React.FC<AgencyListProps> = ({ agencies, currentUser }) => {
-  const canCreate = currentUser?.role === 'SuperAdmin';
+  // Use granular permission check
+  const canCreate = hasPermission(currentUser!, PERMISSIONS.MANAGE_AGENCY);
 
   return (
     <div className="space-y-6">
