@@ -43,8 +43,11 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
     }, 1000);
   };
 
+  // Standard input classes for consistency
+  const inputClasses = "block w-full pl-11 pr-3 py-3 border border-gray-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all shadow-sm outline-none";
+
   return (
-    <div className="min-h-screen flex bg-white font-sans">
+    <div className="min-h-screen flex bg-white dark:bg-slate-900 font-sans transition-colors duration-300">
       
       {/* Left Side - Brand & Visuals (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-brand-900 relative flex-col justify-between p-12 overflow-hidden text-white">
@@ -89,7 +92,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-gray-50 lg:bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-gray-50 lg:bg-white dark:bg-slate-900">
         <div className="w-full max-w-md space-y-8">
           
           <div className="text-center lg:text-left">
@@ -98,8 +101,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
                  <Building2 size={24} />
                </div>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Soo Dhawoow 👋</h2>
-            <p className="mt-2 text-sm text-gray-600">Fadlan gali xogtaada si aad u gasho nidaamka.</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Soo Dhawoow 👋</h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fadlan gali xogtaada si aad u gasho nidaamka.</p>
           </div>
 
           <div className="space-y-4">
@@ -108,7 +111,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
               type="button"
               onClick={handleGoogleLogin}
               disabled={isGoogleLoading}
-              className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium py-3 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-[0.98]"
             >
                {isGoogleLoading ? (
                  <span className="h-5 w-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></span>
@@ -127,16 +130,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+                <div className="w-full border-t border-gray-200 dark:border-slate-800"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 lg:bg-white text-gray-500">Ama isticmaal Email</span>
+                <span className="px-2 bg-gray-50 lg:bg-white dark:bg-slate-900 text-gray-500 dark:text-gray-400 font-medium">Ama isticmaal Email</span>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Email Address</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
@@ -145,7 +148,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-11 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm bg-white transition-all shadow-sm"
+                    className={inputClasses}
                     placeholder="name@company.com"
                     required
                   />
@@ -154,8 +157,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
 
               <div>
                 <div className="flex justify-between items-center mb-1.5 ml-1">
-                   <label className="block text-sm font-semibold text-gray-700">Password</label>
-                   <a href="#" className="text-xs font-semibold text-brand-600 hover:text-brand-700">Ilowday Password?</a>
+                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
+                   <a href="#" className="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400">Ilowday Password?</a>
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -165,7 +168,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-11 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm bg-white transition-all shadow-sm"
+                    className={inputClasses}
                     placeholder="••••••••"
                     required
                   />
@@ -173,7 +176,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium rounded-lg border border-red-100 dark:border-red-900/50 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
                    <span className="text-lg">⚠️</span> {error}
                 </div>
               )}
@@ -198,26 +201,26 @@ export const Login: React.FC<LoginProps> = ({ onLogin, users }) => {
              <div className="flex justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                 <div className="flex flex-col items-center gap-1 group cursor-default">
                    <Smartphone className="h-6 w-6 text-green-600 group-hover:scale-110 transition-transform" />
-                   <span className="text-[10px] font-bold text-gray-500">Zaad</span>
+                   <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">Zaad</span>
                 </div>
                 <div className="flex flex-col items-center gap-1 group cursor-default">
                    <Smartphone className="h-6 w-6 text-yellow-600 group-hover:scale-110 transition-transform" />
-                   <span className="text-[10px] font-bold text-gray-500">eDahab</span>
+                   <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">eDahab</span>
                 </div>
                 <div className="flex flex-col items-center gap-1 group cursor-default">
                    <Globe className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
-                   <span className="text-[10px] font-bold text-gray-500">Online</span>
+                   <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">Online</span>
                 </div>
              </div>
           </div>
           
           {/* Demo Credentials Hint */}
           <div className="mt-8 text-center">
-             <p className="text-xs text-gray-400">Demo Accounts (For Testing):</p>
+             <p className="text-xs text-gray-400 dark:text-gray-500">Demo Accounts (For Testing):</p>
              <div className="mt-2 flex flex-wrap justify-center gap-2">
-                <span className="inline-block px-2 py-1 bg-gray-100 rounded text-[10px] text-gray-500 font-mono">admin@gurihub.com</span>
-                <span className="inline-block px-2 py-1 bg-gray-100 rounded text-[10px] text-gray-500 font-mono">manager@agency.com</span>
-                <span className="inline-block px-2 py-1 bg-gray-100 rounded text-[10px] text-gray-500 font-mono">Pass: password</span>
+                <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-[10px] text-gray-500 dark:text-gray-400 font-mono border border-gray-200 dark:border-slate-700">admin@gurihub.com</span>
+                <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-[10px] text-gray-500 dark:text-gray-400 font-mono border border-gray-200 dark:border-slate-700">manager@agency.com</span>
+                <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-[10px] text-gray-500 dark:text-gray-400 font-mono border border-gray-200 dark:border-slate-700">Pass: password</span>
              </div>
           </div>
 

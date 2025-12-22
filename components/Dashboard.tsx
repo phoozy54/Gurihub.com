@@ -1,180 +1,104 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Property, Tenant, ActivityLog, Transaction } from '../types';
-import { Building2, CalendarDays, DollarSign, TrendingUp, Smartphone, Globe, Briefcase, Bell } from 'lucide-react';
+import { Building2, Users, DollarSign, TrendingUp, ArrowUpRight, Plus, Calendar } from 'lucide-react';
+import { Property, Tenant, Transaction } from '../types';
 
 interface DashboardProps {
   properties: Property[];
   tenants: Tenant[];
   totalRevenue: number;
   occupancyRate: number;
-  activities: ActivityLog[];
   transactions: Transaction[];
+  activities: any[];
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ properties, totalRevenue, activities, transactions }) => {
-  
-  const revenueData = [
-    { name: 'Jan', income: 4000, bookings: 24 },
-    { name: 'Feb', income: 3000, bookings: 18 },
-    { name: 'Mar', income: 2000, bookings: 12 },
-    { name: 'Apr', income: 2780, bookings: 20 },
-    { name: 'May', income: 1890, bookings: 15 },
-    { name: 'Jun', income: 2390, bookings: 22 },
+export const Dashboard: React.FC<DashboardProps> = ({ properties, tenants, transactions }) => {
+  const stats = [
+    { label: 'Total Revenue', value: '$24.5k', icon: DollarSign, trend: '+12%', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    { label: 'Active Leases', value: tenants.length || '42', icon: Users, trend: '98%', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    { label: 'Total Units', value: properties.length || '12', icon: Building2, trend: '+2', color: 'text-brand-500', bg: 'bg-brand-50 dark:bg-brand-500/10' },
+    { label: 'Maintenance', value: '03', icon: TrendingUp, trend: 'Critical', color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10' },
   ];
-
-  const statusData = [
-    { name: 'Available', value: properties.filter(p => p.status === 'Available').length },
-    { name: 'Booked', value: properties.filter(p => p.status === 'Booked').length },
-    { name: 'Maintenance', value: properties.filter(p => p.status === 'Maintenance').length },
-  ];
-
-  const COLORS = ['#10b981', '#3b82f6', '#f59e0b'];
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Platform Overview</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, Super Admin</p>
+           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Dulmarka Maamulka</h1>
+           <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Ku soo dhowow nidaamka GuriHub PMS.</p>
         </div>
-        <div className="flex gap-3">
-           <button className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-brand-700 flex items-center gap-2 transition-transform active:scale-95">
-             <Bell size={16} /> Push Notifications
+        <div className="flex items-center gap-3">
+           <button className="bg-white dark:bg-slate-800 p-4 rounded-[1.5rem] border border-slate-100 dark:border-slate-700 shadow-sm text-slate-600 dark:text-slate-300">
+              <Calendar size={22} />
+           </button>
+           <button className="bg-slate-900 dark:bg-white dark:text-slate-900 text-white px-8 py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-2xl flex items-center gap-2">
+              <Plus size={20} /> New Report
            </button>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center justify-between transition-colors">
-           <div>
-             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Agencies</p>
-             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mt-1">12</h3>
-             <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded mt-2 inline-block">+2 this week</span>
-           </div>
-           <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-             <Briefcase size={24} />
-           </div>
-        </div>
-        
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center justify-between transition-colors">
-           <div>
-             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Bookings</p>
-             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mt-1">84</h3>
-             <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 inline-block">Across 3 Countries</span>
-           </div>
-           <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
-             <CalendarDays size={24} />
-           </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center justify-between transition-colors">
-           <div>
-             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Platform Revenue</p>
-             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mt-1">${totalRevenue.toLocaleString()}</h3>
-             <span className="text-xs text-green-600 dark:text-green-400 flex items-center mt-2">
-                <TrendingUp size={12} className="mr-1" /> 15% Commision
-             </span>
-           </div>
-           <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-             <DollarSign size={24} />
-           </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center justify-between transition-colors">
-           <div>
-             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Mobile Users</p>
-             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mt-1">1.2k</h3>
-             <span className="text-xs text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded mt-2 inline-block">iOS & Android</span>
-           </div>
-           <div className="p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
-             <Smartphone size={24} />
-           </div>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Booking Volume Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors">
-          <h3 className="font-bold text-gray-800 dark:text-white mb-4">Booking Volume & Revenue</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                <Tooltip 
-                  contentStyle={{ 
-                    borderRadius: '8px', 
-                    border: 'none', 
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                    backgroundColor: '#fff' 
-                  }}
-                  itemStyle={{ color: '#1e293b' }}
-                />
-                <Bar dataKey="income" fill="#059669" radius={[4, 4, 0, 0]} name="Revenue ($)" />
-                <Bar dataKey="bookings" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Bookings" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Global Property Status */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors">
-           <h3 className="font-bold text-gray-800 dark:text-white mb-4">Live Inventory</h3>
-           <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                 <PieChart>
-                    <Pie 
-                      data={statusData} 
-                      cx="50%" 
-                      cy="50%" 
-                      innerRadius={50} 
-                      outerRadius={70} 
-                      paddingAngle={5} 
-                      dataKey="value"
-                    >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                 </PieChart>
-              </ResponsiveContainer>
-           </div>
-           <div className="flex flex-col gap-2 mt-2">
-              {statusData.map((entry, index) => (
-                 <div key={entry.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index] }}></div>
-                       <span className="text-gray-600 dark:text-gray-300">{entry.name}</span>
-                    </div>
-                    <span className="font-medium text-gray-800 dark:text-white">{entry.value}</span>
-                 </div>
-              ))}
-           </div>
-        </div>
-      </div>
-
-      {/* Activity Log */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors">
-        <h3 className="font-bold text-gray-800 dark:text-white mb-4">Real-time Platform Activity</h3>
-        <div className="space-y-4">
-           {activities.map((activity) => (
-             <div key={activity.id} className="flex gap-3 items-start p-3 rounded-lg border border-gray-50 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50">
-                <div className="mt-1 flex-shrink-0">
-                  <Globe size={16} className="text-brand-600 dark:text-brand-400" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {stats.map((stat, i) => (
+          <div key={i} className="group bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+             <div className="flex justify-between items-start mb-6">
+                <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
+                   <stat.icon size={28} strokeWidth={2.5} />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 font-medium leading-snug">{activity.text}</p>
-                  <span className="text-xs text-gray-400 dark:text-gray-500 block mt-1">{activity.timestamp}</span>
+                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                   {stat.trend} <ArrowUpRight size={12} />
                 </div>
              </div>
-           ))}
-        </div>
+             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+             <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{stat.value}</h3>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+         {/* Featured Chart Section */}
+         <div className="lg:col-span-8 bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+            <div className="relative z-10">
+               <h3 className="text-2xl font-black mb-8">Performance Analytics</h3>
+               <div className="h-[300px] w-full flex items-end justify-between gap-4">
+                  {[40, 65, 45, 90, 55, 80, 70].map((h, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+                       <div className="w-full bg-white/10 rounded-full relative overflow-hidden h-full">
+                          <div 
+                             className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-brand-600 to-brand-400 rounded-full transition-all duration-1000 delay-300" 
+                             style={{ height: `${h}%` }}
+                          />
+                       </div>
+                       <span className="text-[10px] font-black text-slate-500 uppercase">W{i+1}</span>
+                    </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+
+         {/* Transactions Column */}
+         <div className="lg:col-span-4 bg-white dark:bg-slate-800 rounded-[3rem] p-10 border border-slate-100 dark:border-slate-700 shadow-sm">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-8">Recent Activity</h3>
+            <div className="space-y-6">
+               {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex items-center gap-5 group cursor-pointer">
+                     <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 group-hover:bg-brand-50 group-hover:text-brand-600 transition-all">
+                        <DollarSign size={24} />
+                     </div>
+                     <div className="flex-1">
+                        <p className="font-black text-slate-800 dark:text-white text-sm">Rent Received</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Hassan Ali • 2h ago</p>
+                     </div>
+                     <div className="text-right">
+                        <p className="font-black text-emerald-500">$450</p>
+                     </div>
+                  </div>
+               ))}
+               <button className="w-full mt-6 py-4 bg-slate-50 dark:bg-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                  View Transaction History
+               </button>
+            </div>
+         </div>
       </div>
     </div>
   );

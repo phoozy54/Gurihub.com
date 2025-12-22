@@ -1,7 +1,7 @@
 
 import { OfflineAction } from '../types';
 
-const STORAGE_KEY = 'rentalpro_offline_queue';
+const STORAGE_KEY = 'gurihub_offline_queue';
 
 export const offlineService = {
   getQueue: (): OfflineAction[] => {
@@ -16,34 +16,51 @@ export const offlineService = {
 
   addToQueue: (action: OfflineAction) => {
     const queue = offlineService.getQueue();
+    // Avoid duplicate IDs if any
+    if (queue.find(a => a.id === action.id)) return;
+    
     queue.push(action);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+    // Dispatch custom event to notify components
+    window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: queue.length }));
   },
 
   clearQueue: () => {
     localStorage.removeItem(STORAGE_KEY);
+    window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: 0 }));
   },
 
   getQueueSize: (): number => {
     return offlineService.getQueue().length;
   },
 
-  processQueue: async (callback: (action: OfflineAction) => void) => {
+  /**
+   * Processes the queue by executing a handler for each action.
+   * Handler should return true if successful.
+   */
+  processQueue: async (handler: (action: OfflineAction) => Promise<boolean>) => {
     const queue = offlineService.getQueue();
     if (queue.length === 0) return;
 
-    console.log(`Processing ${queue.length} offline actions...`);
+    console.log(`[OfflineSync] Processing ${queue.length} actions...`);
     
-    // Process items
+    const failedActions: OfflineAction[] = [];
+
     for (const action of queue) {
       try {
-        await callback(action);
+        const success = await handler(action);
+        if (!success) failedActions.push(action);
       } catch (e) {
-        console.error("Failed to process action", action, e);
+        console.error(`[OfflineSync] Failed to process action ${action.id}`, e);
+        failedActions.push(action);
       }
     }
 
-    // Clear queue after processing
-    offlineService.clearQueue();
+    if (failedActions.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(failedActions));
+      window.dispatchEvent(new CustomEvent('offline-queue-updated', { detail: failedActions.length }));
+    } else {
+      offlineService.clearQueue();
+    }
   }
 };

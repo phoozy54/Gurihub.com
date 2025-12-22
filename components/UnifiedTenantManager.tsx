@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { TenantList } from './TenantList';
 import { OrganizationList } from './OrganizationList';
 import { Tenant, Organization, Property, Transaction, User } from '../types';
-import { User as UserIcon, Building2 } from 'lucide-react';
+import { User as UserIcon, Building2, Briefcase } from 'lucide-react';
 
 interface UnifiedTenantManagerProps {
   tenants: Tenant[];
@@ -21,32 +21,40 @@ export const UnifiedTenantManager: React.FC<UnifiedTenantManagerProps> = (props)
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-200 inline-flex gap-2 mb-2">
-        <button
-          onClick={() => setView('individual')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
-            view === 'individual' 
-              ? 'bg-brand-600 text-white shadow-sm' 
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <UserIcon size={18} />
-          Shakhsi (Individuals)
-        </button>
-        <button
-          onClick={() => setView('corporate')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
-            view === 'corporate' 
-              ? 'bg-brand-600 text-white shadow-sm' 
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <Building2 size={18} />
-          Shirkado (Corporate)
-        </button>
+      <div className="flex items-center justify-between">
+         <div className="bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 inline-flex gap-1.5 transition-colors">
+            <button
+            onClick={() => setView('individual')}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${
+               view === 'individual' 
+                  ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+            }`}
+            >
+            <UserIcon size={18} />
+            Kirayste Shakhsi (Individual)
+            </button>
+            <button
+            onClick={() => setView('corporate')}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${
+               view === 'corporate' 
+                  ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/20' 
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+            }`}
+            >
+            <Building2 size={18} />
+            Kirayste Shirkad (Corporate)
+            </button>
+         </div>
+
+         {view === 'corporate' && (
+            <div className="hidden md:flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-4 py-2 rounded-xl border border-gray-100 dark:border-slate-700">
+               <Briefcase size={14} className="text-brand-600" /> Multi-Unit Leases
+            </div>
+         )}
       </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
         {view === 'individual' ? (
           <TenantList 
             tenants={props.tenants}

@@ -1,5 +1,8 @@
 {
   "name": "GuriHub PMS - Somaliland Edition",
   "description": "Somaliland's premier property management system supporting Zaad, eDahab, and Islamic-compliant contracts.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
 }

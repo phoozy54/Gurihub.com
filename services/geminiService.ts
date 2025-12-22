@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize Gemini Client
+// Initialize Gemini Client with API Key from process.env.API_KEY
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const getAIResponse = async (
@@ -9,7 +9,8 @@ export const getAIResponse = async (
   context: string = ""
 ): Promise<string> => {
   try {
-    const modelId = 'gemini-2.5-flash';
+    // Select gemini-3-flash-preview for general text tasks
+    const modelId = 'gemini-3-flash-preview';
     
     const systemInstruction = `Adigu waxaad tahay "GuriBot", oo ah caawiye caqli badan (AI) oo loogu talagalay Nidaamka Maamulka Guryaha ee GuriHub PMS.
     
@@ -43,8 +44,9 @@ export const analyzeMaintenancePriority = async (
   description: string
 ): Promise<{ priority: string; reasoning: string }> => {
   try {
+    // Select gemini-3-pro-preview for complex reasoning and structured output
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-pro-preview',
       contents: `Falanqee cabashadan dayactirka ah, una qoondee darajo (Low, Medium, High, Critical). Description: "${description}"`,
       config: {
         responseMimeType: "application/json",
